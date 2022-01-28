@@ -13,7 +13,7 @@ router.get("/", async function (req, res, next) {
   try {
     const products = Product.find();
 
-    res.status.json(products);
+    res.status(200).json(products);
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ errors: [{ msg: err.message }] });

@@ -25,7 +25,7 @@ app.use(express.json({ extended: true }));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "public")));
 
-app.use(cookieParser());
+// app.use(cookieParser());
 
 app.use("/", indexRouter);
 app.use("/api/sign-in", signinRouter);

@@ -12,6 +12,17 @@ function base64_encode(file) {
   return new Buffer(bitmap).toString("base64");
 }
 
+router.get("/", (req, res) => {
+  res.json({
+    routes: [
+      "/api/product",
+      "/api/product/category",
+      "/api/cart",
+      "/api/blog"
+    ]
+  })
+})
+
 router.post("/upload", async (req, res) => {
   try {
     const fileStr = req.body.img;
