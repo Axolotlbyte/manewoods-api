@@ -14,7 +14,7 @@ const UserSchema = new Schema({
   type: {
     type: String,
     default: "customer",
-  },
+  }
 });
 
 UserSchema.virtual("url").get(function () {

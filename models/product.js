@@ -24,12 +24,18 @@ var ProductSchema = new Schema({
     ref: "Category",
     required: true,
   },
-  images: [
-    {
+  images: {
+    cover: {
       type: String,
       required: true,
     },
-  ],
+    secondary: [
+      {
+        type: String,
+        required: true,
+      },
+    ],
+  },
 });
 
 ProductSchema.virtual("url").get(function () {

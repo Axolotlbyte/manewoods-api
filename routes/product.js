@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { check, validationResult } = require("express-validator");
+const { cloudinary } = require("../middleware/cloudinary");
 
 const Product = require("../models/product");
 const Category = require("../models/category");

@@ -5,6 +5,9 @@ const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
 const User = require("../models/user");
+const Cart = require("../models/cart");
+
+const ObjectId = require("mongodb").ObjectId;
 
 // Create new user
 
@@ -24,7 +27,7 @@ router.post("/", async (req, res) => {
       password,
     });
 
-    if (req.body.type) {
+    if (req.body.type === "blogger" || req.body.type === "admin") {
       user.type = req.body.type;
     }
 
@@ -33,9 +36,17 @@ router.post("/", async (req, res) => {
 
     await user.save();
 
+    const userCart = new Cart({
+      _id: user._id,
+      items: [],
+    });
+
+    await userCart.save();
+
     const payload = {
       user: {
-        id: user._id,
+        id: ObjectId(user._id),
+        type: user.type,
       },
     };
 
