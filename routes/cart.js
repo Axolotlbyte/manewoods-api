@@ -13,8 +13,10 @@ const ObjectId = require('mongodb').ObjectId;
 
 router.get("/:userid", auth, async (req, res, next) => {
   try {
-    const carts = await Cart.find();
-    const cart = await Cart.find({"_id":ObjectId(req.query.userid)});
+    const cart = await Cart.findById(req.params.userid);
+
+    if(!cart) next(res.status(404).json({error: ["User not Found"]}))
+    
     res.status(200).json({ cart, carts });
   } catch (error) {
     console.error(error);
