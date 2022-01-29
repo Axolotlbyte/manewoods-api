@@ -26,7 +26,7 @@ router.get("/", (req, res) => {
 router.post("/upload", async (req, res) => {
   try {
     const fileStr = req.body.img;
-    const uploadResponse = await cloudinary.uploader.upload(path.join(__dirname, "../test-img.jpeg"), {
+    const uploadResponse = await cloudinary.uploader.upload(fileStr, {
       upload_preset: "ml_default",
     });
     console.log(uploadResponse);
