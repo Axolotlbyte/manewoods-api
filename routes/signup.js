@@ -7,8 +7,6 @@ require("dotenv").config();
 const User = require("../models/user");
 const Cart = require("../models/cart");
 
-const ObjectId = require("mongodb").ObjectId;
-
 // Create new user
 
 router.post("/", async (req, res) => {
@@ -45,7 +43,7 @@ router.post("/", async (req, res) => {
 
     const payload = {
       user: {
-        id: ObjectId(user._id),
+        id: user._id,
         type: user.type,
       },
     };
