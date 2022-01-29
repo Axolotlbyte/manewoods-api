@@ -16,7 +16,7 @@ router.get("/:userid", auth, async (req, res, next) => {
     const cart = await Cart.findById(req.params.userid);
 
     if(!cart) next(res.status(404).json({error: ["User not Found"]}))
-    
+
     res.status(200).json({ cart, carts });
   } catch (error) {
     console.error(error);
@@ -26,8 +26,8 @@ router.get("/:userid", auth, async (req, res, next) => {
 
 router.put("/:userid/product/:productid", auth, async (req, res, next) => {
   try {
-    const cart = await Cart.findById(req.query.userid);
-    const product = await Product.findById(req.query.productid);
+    const cart = await Cart.findById(req.params.userid);
+    const product = await Product.findById(req.params.productid);
     const item = new Item({});
   } catch (error) {
     console.error(error);

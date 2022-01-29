@@ -11,7 +11,7 @@ const checkAdmin = require("../middleware/checkAdmin");
 // GET all products
 router.get("/", async function (req, res, next) {
   try {
-    const products = Product.find();
+    const products = await Product.find();
 
     res.status(200).json(products);
   } catch (err) {
@@ -21,9 +21,9 @@ router.get("/", async function (req, res, next) {
 });
 
 // GET products by id
-router.get("/:id", function (req, res, next) {
+router.get("/:id", async (req, res, next) => {
   try {
-    const product = Product.findById(req.params.id);
+    const product = await Product.findById(req.params.id);
 
     if (!product) {
       res.status(404).json({ errors: [{ msg: "Product not found" }] });
@@ -146,8 +146,9 @@ router.delete("/:id", [auth, checkAdmin], async (req, res, next) => {
 
 router.get("/category", async (req, res, next) => {
   try {
+    console.log("working")
     const categories = await Category.find();
-
+    
     res.json(categories);
   } catch (error) {
     console.error(error.message);

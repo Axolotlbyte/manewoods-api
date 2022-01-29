@@ -2,7 +2,7 @@ require("dotenv").config();
 
 const express = require("express");
 const path = require("path");
-const cookieParser = require("cookie-parser");
+// const cookieParser = require("cookie-parser");
 const cors = require("cors");
 
 const connectDB = require("./middleware/connectDB");
@@ -11,8 +11,9 @@ const blogRouter = require("./routes/blog");
 const signinRouter = require("./routes/signin");
 const signupRouter = require("./routes/signup");
 const productRouter = require("./routes/product");
-const cartRouter = require("./routes/cart")
-const indexRouter = require('./routes/index')
+const cartRouter = require("./routes/cart");
+const categoryRouter = require("./routes/category");
+const indexRouter = require("./routes/index");
 connectDB();
 
 const app = express();
@@ -32,7 +33,8 @@ app.use("/api/sign-in", signinRouter);
 app.use("/api/sign-up", signupRouter);
 app.use("/api/blog", blogRouter);
 app.use("/api/product", productRouter);
-app.use("/api/cart", cartRouter)
+app.use("/api/cart", cartRouter);
+app.use("/api/category", categoryRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
