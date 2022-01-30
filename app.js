@@ -5,7 +5,7 @@ const path = require("path");
 // const cookieParser = require("cookie-parser");
 const cors = require("cors");
 
-const connectDB = require("./middleware/connectDB");
+const connectDB = require("./utils/connectDB");
 
 const blogRouter = require("./routes/blog");
 const signinRouter = require("./routes/signin");

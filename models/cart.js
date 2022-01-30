@@ -5,8 +5,21 @@ const Schema = mongoose.Schema;
 const CartSchema = new Schema({
   items: [
     {
-      type: Schema.Types.ObjectId,
-      ref: "Item",
+      product: [
+        {
+          type: Schema.Types.ObjectId,
+          ref: "Product",
+          required: true,
+        },
+      ],
+      quantity: {
+        type: Number,
+        default: 1,
+      },
+      date: {
+        type: Date,
+        default: Date.now,
+      },
     },
   ],
   _id: {

@@ -24,17 +24,25 @@ var ProductSchema = new Schema({
     ref: "Category",
     required: true,
   },
-  images: {
-    cover: {
-      type: String,
-      required: true,
-    },
-    secondary: [
-      {
+  images: [
+    {
+      _id: {
         type: String,
         required: true,
       },
-    ],
+      url: {
+        type: String,
+        required: true,
+      },
+      isCover: {
+        type: Boolean,
+        default: false,
+      },
+    },
+  ],
+  date: {
+    type: Date,
+    default: Date.now,
   },
 });
 

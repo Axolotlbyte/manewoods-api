@@ -1,32 +1,17 @@
 const express = require("express");
 const router = express.Router();
-const { cloudinary } = require("../middleware/cloudinary");
-var fs = require("fs");
-const path = require("path");
-
-// function to encode file data to base64 encoded string
-function base64_encode(file) {
-  // read binary data
-  var bitmap = fs.readFileSync(file);
-  // convert binary data to base64 encoded string
-  return new Buffer(bitmap).toString("base64");
-}
+const { cloudinary } = require("../utils/cloudinary");
+const upload = require("../utils/multer");
 
 router.get("/", (req, res) => {
   res.json({
-    routes: [
-      "/api/product",
-      "/api/product/category",
-      "/api/cart",
-      "/api/blog"
-    ]
-  })
-})
+    routes: ["/api/product", "/api/category", "/api/cart", "/api/blog"],
+  });
+});
 
-router.post("/upload", async (req, res) => {
+router.post("/upload", upload.single("image"), async (req, res) => {
   try {
-    const fileStr = req.body.img;
-    const uploadResponse = await cloudinary.uploader.upload(fileStr, {
+    const uploadResponse = await cloudinary.uploader.upload(req.file.path, {
       upload_preset: "ml_default",
     });
     console.log(uploadResponse);

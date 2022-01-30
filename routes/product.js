@@ -1,11 +1,14 @@
 const express = require("express");
 const router = express.Router();
 const { check, validationResult } = require("express-validator");
-const { cloudinary } = require("../middleware/cloudinary");
+const { cloudinary } = require("../utils/cloudinary");
 
 const Product = require("../models/product");
 const auth = require("../middleware/auth");
 const checkAdmin = require("../middleware/checkAdmin");
+
+const upload = require("../utils/multer");
+const uploadToCloudinary = require("../middleware/uploadToCloudinary");
 
 // GET all products
 router.get("/", async function (req, res, next) {
@@ -51,6 +54,7 @@ router.post(
         .isEmpty(),
     ],
   ],
+  upload.array("product-images", 12),
   async (req, res, next) => {
     const errors = validationResult(req);
 
@@ -63,8 +67,19 @@ router.post(
         price: req.body.price,
         quantity: req.body.quantity,
         category: req.body.category,
-        images: req.body.images,
       });
+
+      const images = [];
+      for (let i = 0; i < req.files.length; i++) {
+        const res = await uploadToCloudinary(req.files[i].path);
+        images.push({
+          _id: res.public_id,
+          url: res.secure_url,
+          isCover: i === 0 ? true : false,
+        });
+      }
+
+      product.images = [...images];
 
       await product.save();
 
@@ -140,6 +155,5 @@ router.delete("/:id", [auth, checkAdmin], async (req, res, next) => {
     res.status(500).json({ errors: error.message });
   }
 });
-
 
 module.exports = router;
