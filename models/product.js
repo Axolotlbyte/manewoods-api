@@ -19,6 +19,12 @@ var ProductSchema = new Schema({
     type: Boolean,
     default: true,
   },
+  description: {
+    type: String,
+    required: true,
+    minlength: 3,
+    maxlength: 200,
+  },
   category: {
     type: Schema.Types.ObjectId,
     ref: "Category",
@@ -40,7 +46,11 @@ var ProductSchema = new Schema({
       },
     },
   ],
-  date: {
+  creation_date: {
+    type: Date,
+    default: Date.now,
+  },
+  last_updated: {
     type: Date,
     default: Date.now,
   },

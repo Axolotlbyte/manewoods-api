@@ -3,6 +3,7 @@ const router = express.Router();
 const { check, validationResult } = require("express-validator");
 
 const Category = require("../models/category");
+const Product = require("../models/product");
 const auth = require("../middleware/auth");
 const checkAdmin = require("../middleware/checkAdmin");
 
@@ -83,16 +84,24 @@ router.put(
 router.delete("/:categoryid", [auth, checkAdmin], async (req, res, next) => {
   try {
     const category = await Category.findById(req.params.categoryid);
-
     if (!category) {
-      res.status(404).json({ errors: [{ msg: "Blog not found" }] });
+      return res.status(404).json({ errors: [{ msg: "Category not found" }] });
     }
+
+    const categoryProducts = Product.find({ category: category._id });
+
+    if (categoryProducts) {
+      return res
+        .status(500)
+        .send(`${categoryProducts.length} are dependent on this Category`);
+    }
+
     await category.remove();
 
-    res.json({ msg: "Category successfully deleted" });
+    return res.json({ msg: "Category successfully deleted" });
   } catch (error) {
     console.error(error.message);
-    res.status(500).json({ errors: error.message });
+    return res.status(500).json({ errors: error.message });
   }
 });
 

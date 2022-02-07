@@ -8,9 +8,9 @@ require("dotenv").config();
 // Sign in / log in
 router.post("/", async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { email, password } = req.body;
 
-    let user = await User.findOne({ username });
+    let user = await User.findOne({ email });
 
     if (!user) {
       return res.status(400).json({ errors: [{ msg: "Invalid Username" }] });

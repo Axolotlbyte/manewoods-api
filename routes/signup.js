@@ -10,10 +10,10 @@ const Cart = require("../models/cart");
 // Create new user
 
 router.post("/", async (req, res) => {
-  const { username, password } = req.body;
+  const { first_name, last_name, email, password } = req.body;
 
   try {
-    let user = await User.findOne({ username });
+    let user = await User.findOne({ email });
     if (user) {
       return res
         .status(400)
@@ -21,7 +21,9 @@ router.post("/", async (req, res) => {
     }
 
     user = new User({
-      username,
+      first_name,
+      last_name,
+      email,
       password,
     });
 
