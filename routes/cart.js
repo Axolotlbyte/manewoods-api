@@ -12,7 +12,7 @@ router.get("/:userid", auth, async (req, res, next) => {
 
     if (!cart) next(res.status(404).json({ error: ["User not Found"] }));
 
-    res.status(200).json({ cart, carts });
+    res.status(200).json({ cart });
   } catch (error) {
     console.error(error);
     res.status(500).json({ err: error.message });
@@ -27,6 +27,7 @@ router.put("/:userid/product/:productid", auth, async (req, res, next) => {
       product: product._id,
       quantity: req.query.quantity,
     };
+
     cart.items.push(item);
 
     await cart.save();

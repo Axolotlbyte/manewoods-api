@@ -90,7 +90,7 @@ router.delete("/:categoryid", [auth, checkAdmin], async (req, res, next) => {
 
     const categoryProducts = Product.find({ category: category._id });
 
-    if (categoryProducts) {
+    if (categoryProducts.length !== undefined) {
       return res
         .status(500)
         .send(`${categoryProducts.length} are dependent on this Category`);

@@ -7,8 +7,8 @@ const Product = require("../models/product");
 const auth = require("../middleware/auth");
 const checkAdmin = require("../middleware/checkAdmin");
 
-const upload = require("../utils/multer");
 const uploadToCloudinary = require("../middleware/uploadToCloudinary");
+const deleteFromCloudinary = require("../middleware/deleteFromCloudinary");
 
 // GET all products
 router.get("/", async function (req, res, next) {
@@ -27,10 +27,8 @@ router.get("/:id", async (req, res, next) => {
   try {
     const product = await Product.findById(req.params.id);
 
-    if (!product) {
+    if (!product)
       res.status(404).json({ errors: [{ msg: "Product not found" }] });
-      next();
-    }
 
     res.status(200).json(product);
   } catch (error) {
@@ -43,31 +41,40 @@ router.get("/:id", async (req, res, next) => {
 router.post("/", [auth, checkAdmin], async (req, res, next) => {
   try {
     const form = new formidable.IncomingForm();
-    await form.parse(req, async (err, fields, files) => {
-      if (err) res.status(500).send("An Error Occured");
-      const product = new Product({
-        name: fields.name,
-        price: fields.price,
-        quantity: fields.quantity,
-        category: fields.category,
-        description: fields.description,
-      });
-
-      const images = [];
-      for (let i = 0; i < files.length; i++) {
-        const uploadRes = await uploadToCloudinary(files[i].path);
-        images.push({
-          _id: uploadRes.public_id,
-          url: uploadRes.secure_url,
-          isCover: i === 0 ? true : false,
+    const filesArr = [];
+    form.on("file", (fieldName, file) => {
+      console.log(`Images retrieved from fieldname: ${fieldName}`);
+      filesArr.push(file);
+    });
+    form.parse(req, async (err, fields, files) => {
+      try {
+        const product = new Product({
+          name: fields.name,
+          price: fields.price,
+          quantity: fields.quantity,
+          category: fields.category,
+          description: fields.description,
         });
+
+        files = [...filesArr];
+        const images = [];
+        for (let i = 0; i < files.length; i++) {
+          const uploadRes = await uploadToCloudinary(files[i].filepath);
+          images.push({
+            _id: uploadRes.public_id,
+            url: uploadRes.secure_url,
+            isCover: i === 0 ? true : false,
+          });
+        }
+
+        product.images = [...images];
+
+        await product.save();
+
+        res.status(200).json(product);
+      } catch (error) {
+        console.error(error);
       }
-
-      product.images = [...images];
-
-      await product.save();
-
-      res.status(200).json(product);
     });
   } catch (error) {
     console.log(error.message);
@@ -97,18 +104,20 @@ router.put(
       return res.status(400), json({ error: error.array() });
     }
     try {
-      const product = Product.findById(req.params.id);
+      const product = await Product.findById(req.params.id);
 
       if (!product) {
         res.status(404).json({ errors: [{ msg: "Product not found" }] });
       }
 
-      const { name, price, quantity, category } = req.body;
+      const { name, price, quantity, category, description } = req.body;
 
       product.name = name;
       product.price = price;
       product.quantity = quantity;
       product.category = category;
+      product.description = description;
+      product.last_updated = Date.now();
 
       await product.save();
 
@@ -121,28 +130,34 @@ router.put(
 );
 
 // Add Images
-router.put(
-  "/:id/images/",
-  [auth, checkAdmin],
-  upload.single("image"),
-  async (req, res, next) => {
+router.put("/:id/images/", [auth, checkAdmin], async (req, res, next) => {
+  const form = new formidable.IncomingForm();
+
+  form.parse(req, async (err, fields, files) => {
     try {
-      const product = Product.findById(req.params.id);
-      const uploadRes = await uploadToCloudinary(req.file.path);
+      const product = await Product.findById(req.params.id);
+
+      if (!product)
+        res.status(404).json({ errors: [{ msg: "Product not found" }] });
+
+      const uploadRes = await uploadToCloudinary(files.image.filepath);
 
       const image = {
         _id: uploadRes.public_id,
         url: uploadRes.secure_url,
-        isCover: i === 0 ? true : false,
+        isCover: product.images.length === 0 ? true : false,
       };
       product.images.push(image);
-
+      product.last_updated = Date.now();
       await product.save();
 
       res.status(200).json(product);
-    } catch (error) {}
-  }
-);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+});
 
 // Set a cover image
 router.put(
@@ -150,24 +165,66 @@ router.put(
   [auth, checkAdmin],
   async (req, res, next) => {
     try {
-      const product = Product.findById(req.params.id);
-      const images = [...product.images];
+      const product = await Product.findById(req.params.id);
 
-      for (let i = 0; i < images.length; i++) {
-        if (images[i]._id === req.params.imageid) {
-          images[i].isCover = true;
-          continue;
-        }
-        if (images[i].isCover === true) {
-          images[i].isCover = false;
-        }
-      }
-      product.images = images;
+      if (!product)
+        res.status(404).json({ errors: [{ msg: "Product not found" }] });
+
+      const oldCover = product.images.find((item) => item.isCover === true);
+      const newCover = product.images.find(
+        (item) => item._id === req.params.imageid
+      );
+
+      oldCover.isCover = false;
+      newCover.isCover = true;
+
+      await oldCover.save();
+      await newCover.save();
+
+      product.last_updated = Date.now();
 
       await product.save();
+
+      res.status(200).json(product);
     } catch (error) {
       console.error(error.message);
       res.status(500).json({ errors: error.message });
+    }
+  }
+);
+
+// DELETE a product image
+router.delete(
+  "/:id/images/:imageid",
+  [auth, checkAdmin],
+  async (req, res, next) => {
+    try {
+      const product = await Product.findById(req.params.id);
+
+      if (!product)
+        res.status(404).json({ errors: [{ msg: "Product not found" }] });
+
+      const image = product.images.find(
+        (item) => item._id === req.params.imageid
+      );
+
+      await deleteFromCloudinary(image._id);
+      await image.remove();
+
+      if (image.isCover) {
+        const newCover = await product.images.findOne();
+        newCover.isCover = true;
+
+        await newCover.save();
+      }
+
+      product.last_updated = Date.now();
+      await product.save();
+
+      res.status(200).json(product);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ error: error.message });
     }
   }
 );
@@ -177,9 +234,8 @@ router.delete("/:id", [auth, checkAdmin], async (req, res, next) => {
   try {
     const product = await Product.findById(req.params.id);
 
-    if (!product) {
+    if (!product)
       res.status(404).json({ errors: [{ msg: "Product not found" }] });
-    }
 
     const name = product.name;
     await product.remove();

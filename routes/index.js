@@ -39,9 +39,12 @@ router.post("/upload", upload.array("images", 12), async (req, res) => {
 
 router.post("/multipart", async (req, res, next) => {
   const form = new formidable.IncomingForm();
+  const filesArr = []
+  form.on('file', (fieldName, file) => {
+    filesArr.push(file)
+  });
   form.parse(req, (err, fields, files) => {
-    files = Object.keys(files).map(key => files[key])
-    res.json({fields, files});
+    res.json({ ...fields, images: filesArr });
   });
 });
 
