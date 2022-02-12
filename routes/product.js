@@ -78,7 +78,7 @@ router.post("/", [auth, checkAdmin], async (req, res, next) => {
     });
   } catch (error) {
     console.log(error.message);
-    res.status(500).json({ errors: error.message });
+    res.status(500).json({ errors: [{ msg: error.message }] });
   }
 });
 
@@ -124,7 +124,7 @@ router.put(
       res.status(200).json(product);
     } catch (error) {
       console.error(error.message);
-      res.status(500).json({ errors: error.message });
+      res.status(500).json({ errors: [{ msg: error.message }] });
     }
   }
 );
@@ -175,6 +175,9 @@ router.put(
         (item) => item._id === req.params.imageid
       );
 
+      if (!newCover)
+        res.status(404).json({ errors: [{ msg: "Image not found" }] });
+
       oldCover.isCover = false;
       newCover.isCover = true;
 
@@ -188,7 +191,7 @@ router.put(
       res.status(200).json(product);
     } catch (error) {
       console.error(error.message);
-      res.status(500).json({ errors: error.message });
+      res.status(500).json({ errors: [{ msg: error.message }] });
     }
   }
 );
@@ -207,6 +210,8 @@ router.delete(
       const image = product.images.find(
         (item) => item._id === req.params.imageid
       );
+      if (!image)
+        res.status(404).json({ errors: [{ msg: "Image not found" }] });
 
       await deleteFromCloudinary(image._id);
       await image.remove();
@@ -224,7 +229,7 @@ router.delete(
       res.status(200).json(product);
     } catch (error) {
       console.log(error);
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ errors: [{ msg: error.message }] });
     }
   }
 );
@@ -243,7 +248,7 @@ router.delete("/:id", [auth, checkAdmin], async (req, res, next) => {
     res.status(200).send(`${name} successfully Deleted`);
   } catch (error) {
     console.error(error.message);
-    res.status(500).json({ errors: error.message });
+    res.status(500).json({ errors: [{ msg: error.message }] });
   }
 });
 
