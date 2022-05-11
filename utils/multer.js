@@ -3,7 +3,15 @@ const path = require("path");
 
 // Multer config
 module.exports = multer({
-  storage: multer.diskStorage({}),
+  storage: multer.diskStorage({
+    destination: function (request, file, callback) {
+      callback(null, path.join(__dirname, "..",'uploads'));
+    },
+    filename: function (request, file, callback) {
+      console.log(file);
+      callback(null, `${Date.now()}${file.originalname}`);
+    },
+  }),
   fileFilter: (req, file, cb) => {
     let ext = path.extname(file.originalname);
     if (

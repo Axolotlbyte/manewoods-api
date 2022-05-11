@@ -3,6 +3,9 @@ const router = express.Router();
 const { check, validationResult } = require("express-validator");
 const formidable = require("formidable");
 
+const upload = require("../utils/multer");
+const fs = require("fs");
+
 const Product = require("../models/product");
 const auth = require("../middleware/auth");
 const checkAdmin = require("../middleware/checkAdmin");
@@ -128,6 +131,22 @@ router.put(
     }
   }
 );
+
+router.post("/image", upload.single("image"), async (req, res) => {
+  try {
+    const uploadRes = await uploadToCloudinary(req.file.path);
+
+    fs.unlinkSync(req.file.path);
+
+    res.json({
+      msg: "Successfully Uploaded",
+      upload: { _id: uploadRes.public_id, url: uploadRes.secure_url },
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ err: "Something went wrong" });
+  }
+});
 
 // Add Images
 router.put("/:id/images/", [auth, checkAdmin], async (req, res, next) => {
